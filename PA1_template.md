@@ -11,7 +11,8 @@ output:
 
 ### Part 0: Set global options and load packages  
 
-```{r setup}
+
+```r
 options(scipen = 999,                           # Don't use scientific notation
         digits = 1)                             # Display one significant digit
 
@@ -21,7 +22,8 @@ knitr::opts_chunk$set(echo = TRUE,
                       fig.path = "./figure/")
 ```
 
-```{r load-packages}
+
+```r
 library(tidyverse)
 library(scales)
 library(lubridate)
@@ -32,13 +34,15 @@ library(chron)
 
 Load data
 
-```{r read-data}
+
+```r
 dataRead <- read.csv("./activity.csv")
 ```
 
 Preprocess data: convert interval to time and combine with date to form a date/time object; convert date to a date object and time to a chron time object.
 
-```{r pre-process-data}
+
+```r
 data <-
     dataRead %>%
     mutate(time = paste(interval %/% 100,       # Convert time interval to time;
@@ -53,7 +57,8 @@ data <-
 
 ### Part 2: What is the mean total number of steps taken per day?
 
-```{r steps-by-day}
+
+```r
 # Group data by date and summarize
 histData <-
     data %>%
@@ -75,7 +80,11 @@ ggplot(data = histData,
     theme_classic() + 
     theme(plot.title = element_text(hjust = 0.5),
           plot.margin = margin(1, 1, 1, 1, "cm"))
+```
 
+![](./figure/steps-by-day-1.png)<!-- -->
+
+```r
 # Calculate mean and median number of steps for display
 meanSteps <- mean(histData$totalSteps, na.rm = TRUE)
 medianSteps <- median(histData$totalSteps, na.rm = TRUE)
@@ -84,12 +93,13 @@ medianSteps <- median(histData$totalSteps, na.rm = TRUE)
 Histogram of the total number of steps taken each day with missing data (i.e.,`NA`s) ignored. Note that the `sum()` of an empty set is 0. As such, the sum of steps for days in which all measurements are `NA` is 0. These days--those in which all measurements are `NA`--contribute to the "spike" in the first bin.
 
 Step statistics:  
-mean: `r format(meanSteps, big.mark = ",", nsmall = 1)`  
-median: `r format(medianSteps, big.mark = ",", nsmall = 1)`
+mean: 9,354.2  
+median: 10,395
 
 ### Part 3: What is the average daily activity pattern?
 
-```{r time-series1}
+
+```r
 # Group data by time and summarize
 timeData <-
     data %>%
@@ -123,13 +133,16 @@ ggplot(data = timeData, mapping = aes(x = time, y = avgSteps)) +
           plot.margin = margin(1, 1, 1, 1, "cm"))
 ```
 
-Time series plot of the 5-minute intervals and the average number of steps taken, averaged across all days. Here, the interval with the maximum number of steps, `r sub(":00$", "", as.character(maxInterval))`, is marked by the dotted vertical line. 
+![](./figure/time-series1-1.png)<!-- -->
+
+Time series plot of the 5-minute intervals and the average number of steps taken, averaged across all days. Here, the interval with the maximum number of steps, 08:35, is marked by the dotted vertical line. 
 
 ### Part 4: Imputing missing values
 
-`sum(!complete.cases(data))` = `r format(sum(!complete.cases(data)), big.mark = ",")` rows in the data set have `NA`s.
+`sum(!complete.cases(data))` = 2,304 rows in the data set have `NA`s.
 
-```{r impune-NAs}
+
+```r
 # Group by time and summarize
 intervalAvg <-
     dataRead %>%
@@ -147,7 +160,8 @@ data <-
 
 As shown in the code chunk above, I imputed an `NA` by replacing it with the mean value of that interval.
 
-```{r revised-histogram}
+
+```r
 # Group by time and summarize
 histData <-
     data %>%
@@ -167,7 +181,11 @@ ggplot(data = histData, mapping = aes(x = totalSteps)) +
     theme_classic() + 
     theme(plot.title = element_text(hjust = 0.5),
           plot.margin = margin(1, 1, 1, 1, "cm"))
+```
 
+![](./figure/revised-histogram-1.png)<!-- -->
+
+```r
 # Calculate mean and median number of steps for display
 meanSteps <- mean(histData$totalSteps)
 medianSteps <- median(histData$totalSteps)
@@ -176,14 +194,15 @@ medianSteps <- median(histData$totalSteps)
 Histogram of the total number of steps taken each day with imputed data.
 
 Step statistics:  
-mean: `r format(meanSteps, big.mark = ",", nsmall = 1)`  
-median: `r format(medianSteps, big.mark = ",", nsmall = 1)`
+mean: 10,766.2  
+median: 10,766.2
 
 The value for the mean increased from Part 2. This makes sense given that the previous average is included in the calculation of the new average multiple times--the new average could be no less than the old average. For similar reasons, the median also increased. Note that the shape of the histogram has also changed, with the spike in the first bin no longer present and the bin with the (new) average number of daily steps--the 10,000 to 12,000 steps bin--increasing accordingly.
 
 ### Part 5: Are there differences in the activity pattern between weekdays and weekends?
 
-```{r weekdays-vs-weekends}
+
+```r
 # Add day of week--weekday or weekend--designation; by default, a week starts on
 # Monday (1) and ends on Sunday (7)
 data <-
@@ -216,5 +235,7 @@ ggplot(data = data, mapping = aes(x = time, y = avgSteps)) +
           strip.placement = "outside",
           strip.text.x = element_text(size = 11))
 ```
+
+![](./figure/weekdays-vs-weekends-1.png)<!-- -->
 
 Plot of the average number of steps taken per time interval on weekdays and weekends. As noted, the pattern is roughly the same, with more activity in the morning on weekdays and more activity overall on weekends.
